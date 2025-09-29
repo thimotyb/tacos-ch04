@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import lombok.extern.slf4j.Slf4j;
 import tacos.Ingredient;
 import tacos.Ingredient.Type;
 import tacos.Order;
@@ -76,7 +75,8 @@ public class DesignTacoController {
     }
     
     String username = principal.getName();
-    User user = userRepo.findByUsername(username);
+    User user = userRepo.findByUsername(username)
+        .orElseThrow(() -> new IllegalStateException("User not found: " + username));
     model.addAttribute("user", user);
 
     return "design";

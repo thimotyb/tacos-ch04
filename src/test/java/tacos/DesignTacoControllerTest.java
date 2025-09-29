@@ -1,4 +1,5 @@
 package tacos;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -12,15 +13,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tacos.Ingredient.Type;
@@ -30,17 +29,16 @@ import tacos.data.TacoRepository;
 import tacos.data.UserRepository;
 import tacos.web.DesignTacoController;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(DesignTacoController.class)
-public class DesignTacoControllerTest {
+class DesignTacoControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
-  
+
   private List<Ingredient> ingredients;
 
   private Taco design;
-  
+
   @MockBean
   private IngredientRepository ingredientRepository;
 
@@ -53,45 +51,46 @@ public class DesignTacoControllerTest {
   @MockBean
   private UserRepository userRepository;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     ingredients = Arrays.asList(
-      new Ingredient("FLTO", "Flour Tortilla", Type.WRAP),
-      new Ingredient("COTO", "Corn Tortilla", Type.WRAP),
-      new Ingredient("GRBF", "Ground Beef", Type.PROTEIN),
-      new Ingredient("CARN", "Carnitas", Type.PROTEIN),
-      new Ingredient("TMTO", "Diced Tomatoes", Type.VEGGIES),
-      new Ingredient("LETC", "Lettuce", Type.VEGGIES),
-      new Ingredient("CHED", "Cheddar", Type.CHEESE),
-      new Ingredient("JACK", "Monterrey Jack", Type.CHEESE),
-      new Ingredient("SLSA", "Salsa", Type.SAUCE),
-      new Ingredient("SRCR", "Sour Cream", Type.SAUCE)
-    );
-    
-    when(ingredientRepository.findAll())
-        .thenReturn(ingredients);
-        
-    when(ingredientRepository.findById("FLTO")).thenReturn(Optional.of(new Ingredient("FLTO", "Flour Tortilla", Type.WRAP)));
-    when(ingredientRepository.findById("GRBF")).thenReturn(Optional.of(new Ingredient("GRBF", "Ground Beef", Type.PROTEIN)));
-    when(ingredientRepository.findById("CHED")).thenReturn(Optional.of(new Ingredient("CHED", "Cheddar", Type.CHEESE)));
-    
+        new Ingredient("FLTO", "Flour Tortilla", Type.WRAP),
+        new Ingredient("COTO", "Corn Tortilla", Type.WRAP),
+        new Ingredient("GRBF", "Ground Beef", Type.PROTEIN),
+        new Ingredient("CARN", "Carnitas", Type.PROTEIN),
+        new Ingredient("TMTO", "Diced Tomatoes", Type.VEGGIES),
+        new Ingredient("LETC", "Lettuce", Type.VEGGIES),
+        new Ingredient("CHED", "Cheddar", Type.CHEESE),
+        new Ingredient("JACK", "Monterrey Jack", Type.CHEESE),
+        new Ingredient("SLSA", "Salsa", Type.SAUCE),
+        new Ingredient("SRCR", "Sour Cream", Type.SAUCE));
+
+    when(ingredientRepository.findAll()).thenReturn(ingredients);
+
+    when(ingredientRepository.findById("FLTO"))
+        .thenReturn(Optional.of(new Ingredient("FLTO", "Flour Tortilla", Type.WRAP)));
+    when(ingredientRepository.findById("GRBF"))
+        .thenReturn(Optional.of(new Ingredient("GRBF", "Ground Beef", Type.PROTEIN)));
+    when(ingredientRepository.findById("CHED"))
+        .thenReturn(Optional.of(new Ingredient("CHED", "Cheddar", Type.CHEESE)));
+
     design = new Taco();
     design.setName("Test Taco");
 
     design.setIngredients(Arrays.asList(
         new Ingredient("FLTO", "Flour Tortilla", Type.WRAP),
         new Ingredient("GRBF", "Ground Beef", Type.PROTEIN),
-        new Ingredient("CHED", "Cheddar", Type.CHEESE)
-    	));
+        new Ingredient("CHED", "Cheddar", Type.CHEESE)));
 
     when(userRepository.findByUsername("testuser"))
-    		.thenReturn(new User("testuser", "testpass", "Test User", "123 Street", "Someville", "CO", "12345", "123-123-1234"));
+        .thenReturn(Optional.of(new User("testuser", "testpass", "Test User", "123 Street",
+            "Someville", "CO", "12345", "123-123-1234")));
   }
 
   @Test
-  @WithMockUser(username="testuser", password="testpass")
-  public void testShowDesignForm() throws Exception {
-	mockMvc.perform(get("/design"))
+  @WithMockUser(username = "testuser", password = "testpass")
+  void testShowDesignForm() throws Exception {
+    mockMvc.perform(get("/design"))
         .andExpect(status().isOk())
         .andExpect(view().name("design"))
         .andExpect(model().attribute("wrap", ingredients.subList(0, 2)))
@@ -102,16 +101,14 @@ public class DesignTacoControllerTest {
   }
 
   @Test
-  @WithMockUser(username="testuser", password="testpass", authorities="ROLE_USER")
-  public void processDesign() throws Exception {
-    when(designRepository.save(design))
-        .thenReturn(design);
-    
+  @WithMockUser(username = "testuser", password = "testpass", authorities = "ROLE_USER")
+  void processDesign() throws Exception {
+    when(designRepository.save(design)).thenReturn(design);
+
     mockMvc.perform(post("/design").with(csrf())
         .content("name=Test+Taco&ingredients=FLTO,GRBF,CHED")
         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
         .andExpect(status().is3xxRedirection())
         .andExpect(header().stringValues("Location", "/orders/current"));
   }
-
 }
