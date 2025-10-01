@@ -2,8 +2,10 @@
 
 This project is the Taco Cloud sample application from *Spring in Action*, Chapter 4. It demonstrates how to build a simple taco design and ordering system with Spring Boot, MVC controllers, Thymeleaf views, Spring Security, and Spring Data JPA backed by an embedded H2 database.
 
+**Note:** This project has been upgraded to Spring Boot 3 and Spring Security 6.
+
 ## Prerequisites
-- Java 8 or newer on the PATH (`java -version`)
+- Java 17 or newer on the PATH (`java -version`)
 - Apache Maven 3.5+ (`mvn -version`)
 
 ## Build and Run
