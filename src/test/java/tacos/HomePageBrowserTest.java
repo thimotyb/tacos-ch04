@@ -1,50 +1,30 @@
 package tacos;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.concurrent.TimeUnit;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc(addFilters = false)
 class HomePageBrowserTest {
 
-  @LocalServerPort
-  private int port;
-  private static HtmlUnitDriver browser;
-
-  @BeforeAll
-  static void setup() {
-    browser = new HtmlUnitDriver(true);
-    browser.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-  }
-
-  @AfterAll
-  static void teardown() {
-    if (browser != null) {
-      browser.quit();
-    }
-  }
+  @Autowired
+  private MockMvc mockMvc;
 
   @Test
-  void testHomePage() {
-    String homePage = "http://localhost:" + port;
-    browser.get(homePage);
-
-    String titleText = browser.getTitle();
-    assertEquals("Taco Cloud", titleText);
-
-    String h1Text = browser.findElement(By.tagName("h1")).getText();
-    assertEquals("Welcome to...", h1Text);
-
-    String imgSrc = browser.findElement(By.tagName("img")).getAttribute("src");
-    assertEquals(homePage + "/images/TacoCloud.png", imgSrc);
+  void testHomePage() throws Exception {
+    mockMvc.perform(get("/"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("<title>Taco Cloud</title>")))
+        .andExpect(content().string(containsString("<h1>Welcome to...</h1>")))
+        .andExpect(content().string(containsString("/images/TacoCloud.png")));
   }
 }

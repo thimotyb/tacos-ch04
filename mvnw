@@ -46,6 +46,32 @@ if [ -z "$MAVEN_SKIP_RC" ] ; then
 
 fi
 
+# Prefer a local Java 17 runtime when none is configured explicitly.
+JAVA17_CANDIDATE="$HOME/.sdkman/candidates/java/17.0.16-tem"
+if [ -z "$JAVA_HOME" ]; then
+  if [ -d "$JAVA17_CANDIDATE" ]; then
+    export JAVA_HOME="$JAVA17_CANDIDATE"
+    PATH="$JAVA_HOME/bin:$PATH"
+  fi
+else
+  if [ -d "$JAVA17_CANDIDATE" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVA_VERSION_OUTPUT=$("$JAVA_HOME/bin/java" -version 2>&1 | head -n 1)
+    JAVA_MAJOR=""
+    case "$JAVA_VERSION_OUTPUT" in
+      *\"1.*)
+        JAVA_MAJOR=`echo "$JAVA_VERSION_OUTPUT" | sed -n 's/.*"1\.\([0-9]*\).*".*/\1/p'`
+        ;;
+      *\"[0-9]*.*)
+        JAVA_MAJOR=`echo "$JAVA_VERSION_OUTPUT" | sed -n 's/.*\"\([0-9]*\).*/\1/p'`
+        ;;
+    esac
+    if [ -n "$JAVA_MAJOR" ] && [ "$JAVA_MAJOR" -lt 17 ] 2>/dev/null; then
+      export JAVA_HOME="$JAVA17_CANDIDATE"
+      PATH="$JAVA_HOME/bin:$PATH"
+    fi
+  fi
+fi
+
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false;
 darwin=false;
